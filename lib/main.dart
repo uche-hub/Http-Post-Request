@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_post_request/model/user_model.dart';
+import 'package:http/http.dart';
 
 void main() {
   runApp(MyApp());
@@ -33,7 +35,27 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+Future<UserModel> createUser(String name, String jobTitle) async{
+  final String apiUrl = "https://reqres.in/api/user";
+
+  final response = await http.post(apiUrl, body: {
+    "name": name,
+    "job": jobTitle
+  });
+
+  if(response.statusCode == 201){
+    final String responseString = response.body;
+
+    return userModelFromJson(responseString);
+  }
+  else{
+    return null;
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
+
+  UserModel _user;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController jobController = TextEditingController();
@@ -61,8 +83,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
+        onPressed: () async{
+          final String name = nameController.text;
+          final String jobTitle = jobController.text;
 
+          final UserModel user = await createUser(name, jobTitle);
+
+          setState(() {
+            _user = user;
+          });
         },
         tooltip: 'Increment',
         child: Icon(Icons.add),
